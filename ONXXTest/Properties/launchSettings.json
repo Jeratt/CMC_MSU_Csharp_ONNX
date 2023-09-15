@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "ONXX_UI": {
+      "commandName": "Project"
+    },
+    "Profile 1": {
+      "commandName": "Executable"
+    }
+  }
+}
