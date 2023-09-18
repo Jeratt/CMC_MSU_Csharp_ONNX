@@ -8,6 +8,11 @@
 
 # VS Code
 .vscode/
+.vs/
+
+backup/
+
+MyYOLOApi.sln
 
 # Build results
 
