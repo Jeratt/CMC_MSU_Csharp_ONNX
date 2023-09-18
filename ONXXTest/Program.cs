@@ -14,10 +14,13 @@ namespace YOLO_csharp
 {
     class Program
     {
+        static CancellationTokenSource cts = new CancellationTokenSource();
+
         static async Task Main(string[] args)
         {
             string modelPath = "https://storage.yandexcloud.net/dotnet4/tinyyolov2-8.onnx";
             string? imagePath;
+
             Image<Rgb24> img;
             List<Pair> res = new List<Pair>();
             List<ObjectBox> lob;
@@ -29,11 +32,16 @@ namespace YOLO_csharp
                 imagePath = Console.ReadLine();
                 if (imagePath is null || imagePath == "")
                     break;
+                if (imagePath == "cancel")
+                {
+                    cts.Cancel();
+                    continue;
+                }
                 img = Image.Load<Rgb24>(imagePath);
                 //lob = await modelManager.PredictAsync(img);
                 try
                 {
-                    tasks.Add(new Tuple<Task<List<ObjectBox>>, string>(modelManager.PredictAsync(img), imagePath));
+                    tasks.Add(new Tuple<Task<List<ObjectBox>>, string>(modelManager.PredictAsync(img, cts.Token), imagePath));
                 }
                 catch(Exception x)
                 {
@@ -50,7 +58,11 @@ namespace YOLO_csharp
                 {
                     imagePath = t.Item2;
                     lob = await t.Item1;
-                    foreach (ObjectBox obj in lob)
+                    if (lob is null)
+                    {
+                        continue;
+                    }
+                    foreach (ObjectBox? obj in lob)
                     {
                         res.Add(new Pair(imagePath, obj));
                     }

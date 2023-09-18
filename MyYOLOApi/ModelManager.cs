@@ -11,13 +11,21 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace MyYOLOApi
 {
+    public interface IFileManager
+    {
+        public bool CheckIfExists(string path);
+        public  
+    }
     public class ModelManager //ONNX model manager
     {
         static SemaphoreSlim detection_token = new SemaphoreSlim(1, 1);
         public string ModelPath { get; set; }
 
+        private IFileManager fileManager; 
+
         private InferenceSession? session = null;
-        public ModelManager(string ModelPath) { 
+        public ModelManager(string ModelPath, IFileManager fileManager) {
+            this.fileManager = fileManager;
             this.ModelPath = ModelPath;
         }
 
@@ -26,7 +34,7 @@ namespace MyYOLOApi
             if (session is null) {
                 int tolerance = 1;
                 //DEBUG
-                File.Delete("tinyyolo2-8.onnx");
+                //File.Delete("tinyyolo2-8.onnx");
                 if (File.Exists("tinyyolo2-8.onnx")){
                     Console.WriteLine("Model file is already downloaded. Initializing model");
                     session = new InferenceSession("tinyyolo2-8.onnx");
@@ -56,7 +64,7 @@ namespace MyYOLOApi
             }
         }
 
-        public async Task<List<ObjectBox>> PredictAsync(Image<Rgb24> img)
+        public async Task<List<ObjectBox>> PredictAsync(Image<Rgb24> img, CancellationToken ct)
         {
             try
             {
@@ -109,6 +117,7 @@ namespace MyYOLOApi
                 //var runOptions = new RunOptions();
                 //runOptions.LogVerbosityLevel = 0;
                 using IDisposableReadOnlyCollection<DisposableNamedOnnxValue> results = session.Run(inputs);
+                ct.ThrowIfCancellationRequested();
 
                 // Получаем результаты
                 var outputs = results.First().AsTensor<float>();
@@ -268,6 +277,7 @@ namespace MyYOLOApi
             }
             catch(Exception ex)
             {
+                detection_token.Release();
                 Console.WriteLine(ex.Message);
                 return null;
             }
