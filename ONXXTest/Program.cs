@@ -25,7 +25,9 @@ namespace YOLO_csharp
             List<Pair> res = new List<Pair>();
             List<ObjectBox> lob;
             List<Tuple<Task<List<ObjectBox>>, string>> tasks = new List<Tuple<Task<List<ObjectBox>>, string>>();
-            ModelManager modelManager = new ModelManager(modelPath);
+            FileManager fm = new FileManager();
+
+            ModelManager modelManager = new ModelManager(modelPath, fm);
 
             while (true)
             {
@@ -119,6 +121,24 @@ namespace YOLO_csharp
         {
             Filename = filename;
             Obj = ob;
+        }
+    }
+
+    class FileManager : IFileManager
+    {
+        public bool CheckIfExists(string path)
+        {
+            return File.Exists(path);
+        }
+
+        public void PrintText(string text)
+        {
+            Console.WriteLine(text);
+        }
+
+        public void WriteBytes(string path, byte[] bytes)
+        {
+            File.WriteAllBytes(path, bytes);
         }
     }
 }

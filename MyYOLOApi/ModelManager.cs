@@ -14,7 +14,10 @@ namespace MyYOLOApi
     public interface IFileManager
     {
         public bool CheckIfExists(string path);
-        public  
+
+        public void PrintText(string text);
+
+        public void WriteBytes(string path, byte[] bytes);
     }
     public class ModelManager //ONNX model manager
     {
@@ -34,14 +37,14 @@ namespace MyYOLOApi
             if (session is null) {
                 int tolerance = 1;
                 //DEBUG
-                //File.Delete("tinyyolo2-8.onnx");
-                if (File.Exists("tinyyolo2-8.onnx")){
-                    Console.WriteLine("Model file is already downloaded. Initializing model");
+                File.Delete("tinyyolo2-8.onnx");
+                if (this.fileManager.CheckIfExists("tinyyolo2-8.onnx")) {
+                    this.fileManager.PrintText("Model file is already downloaded. Initializing model");
                     session = new InferenceSession("tinyyolo2-8.onnx");
                     return 0;
                 }
                 while (true && tolerance < 4) {
-                    Console.WriteLine($"Trying to download model {tolerance}:");
+                    this.fileManager.PrintText($"Trying to download model {tolerance}:");
                     try
                     {
                         await this.LoadModelAsync();
@@ -289,13 +292,13 @@ namespace MyYOLOApi
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    if (!File.Exists("tinyyolo2-8.onnx"))
+                    if (!this.fileManager.CheckIfExists("tinyyolo2-8.onnx"))
                     {
                         byte[] model = await client.GetByteArrayAsync(this.ModelPath);
-                        File.WriteAllBytes("tinyyolo2-8.onnx", model);
-                        Console.WriteLine("Model successfully downloaded");
+                        this.fileManager.WriteBytes("tinyyolo2-8.onnx", model);
+                        this.fileManager.PrintText("Model successfully downloaded");
                     }
-                    Console.WriteLine(Path.GetFullPath("tinyyolo2-8.onnx"));
+                    //this.fileManager.PrintText(Path.GetFullPath("tinyyolo2-8.onnx"));
                 }
             }
             catch(Exception ex)
