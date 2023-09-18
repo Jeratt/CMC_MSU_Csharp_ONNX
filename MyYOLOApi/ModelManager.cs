@@ -37,7 +37,7 @@ namespace MyYOLOApi
             if (session is null) {
                 int tolerance = 1;
                 //DEBUG
-                File.Delete("tinyyolo2-8.onnx");
+                //File.Delete("tinyyolo2-8.onnx");
                 if (this.fileManager.CheckIfExists("tinyyolo2-8.onnx")) {
                     this.fileManager.PrintText("Model file is already downloaded. Initializing model");
                     session = new InferenceSession("tinyyolo2-8.onnx");
