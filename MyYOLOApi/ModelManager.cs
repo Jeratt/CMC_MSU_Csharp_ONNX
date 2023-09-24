@@ -15,21 +15,28 @@ namespace MyYOLOApi
     {
         public bool CheckIfExists(string path);
 
-        public void PrintText(string text);
-
         public void WriteBytes(string path, byte[] bytes);
+    }
+
+    public interface IWriter
+    {
+        public void PrintText(string text);
     }
     public class ModelManager //ONNX model manager
     {
         static SemaphoreSlim detection_token = new SemaphoreSlim(1, 1);
         public string ModelPath { get; set; }
 
-        private IFileManager fileManager; 
+        private IFileManager fileManager;
+
+        private IWriter writer;
 
         private InferenceSession? session = null;
-        public ModelManager(string ModelPath, IFileManager fileManager) {
+        public ModelManager(string ModelPath, IFileManager fileManager, IWriter writer)
+        {
             this.fileManager = fileManager;
             this.ModelPath = ModelPath;
+            this.writer = writer;
         }
 
         public async Task<int> Init()
@@ -39,12 +46,12 @@ namespace MyYOLOApi
                 //DEBUG
                 //File.Delete("tinyyolo2-8.onnx");
                 if (this.fileManager.CheckIfExists("tinyyolo2-8.onnx")) {
-                    this.fileManager.PrintText("Model file is already downloaded. Initializing model");
+                    this.writer.PrintText("Model file is already downloaded. Initializing model");
                     session = new InferenceSession("tinyyolo2-8.onnx");
                     return 0;
                 }
                 while (true && tolerance < 4) {
-                    this.fileManager.PrintText($"Trying to download model {tolerance}:");
+                    this.writer.PrintText($"Trying to download model {tolerance}:");
                     try
                     {
                         await this.LoadModelAsync();
@@ -254,7 +261,7 @@ namespace MyYOLOApi
                     for (int j = i + 1; j < objects.Count;)
                     {
                         var o2 = objects[j];
-                        Console.WriteLine($"IoU({i},{j})={o1.IoU(o2)}");
+                        this.writer.PrintText($"IoU({i},{j})={o1.IoU(o2)}");
                         if (o1.Class == o2.Class && o1.IoU(o2) > 0.6)
                         {
                             if (o1.Confidence < o2.Confidence)
@@ -281,7 +288,7 @@ namespace MyYOLOApi
             catch(Exception ex)
             {
                 detection_token.Release();
-                Console.WriteLine(ex.Message);
+                this.writer.PrintText(ex.Message);
                 return null;
             }
         }
@@ -296,14 +303,14 @@ namespace MyYOLOApi
                     {
                         byte[] model = await client.GetByteArrayAsync(this.ModelPath);
                         this.fileManager.WriteBytes("tinyyolo2-8.onnx", model);
-                        this.fileManager.PrintText("Model successfully downloaded");
+                        this.writer.PrintText("Model successfully downloaded");
                     }
                     //this.fileManager.PrintText(Path.GetFullPath("tinyyolo2-8.onnx"));
                 }
             }
             catch(Exception ex)
             {
-                Console.WriteLine($"Exception: {ex.Message}");
+                this.writer.PrintText($"Exception: {ex.Message}");
             }
         }
     }

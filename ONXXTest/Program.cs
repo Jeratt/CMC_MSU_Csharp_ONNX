@@ -26,8 +26,9 @@ namespace YOLO_csharp
             List<ObjectBox> lob;
             List<Tuple<Task<List<ObjectBox>>, string>> tasks = new List<Tuple<Task<List<ObjectBox>>, string>>();
             FileManager fm = new FileManager();
+            Writer writer = new Writer();
 
-            ModelManager modelManager = new ModelManager(modelPath, fm);
+            ModelManager modelManager = new ModelManager(modelPath, fm, writer);
 
             while (true)
             {
@@ -131,14 +132,19 @@ namespace YOLO_csharp
             return File.Exists(path);
         }
 
-        public void PrintText(string text)
-        {
-            Console.WriteLine(text);
-        }
+
 
         public void WriteBytes(string path, byte[] bytes)
         {
             File.WriteAllBytes(path, bytes);
+        }
+    }
+
+    class Writer: IWriter
+    {
+        public void PrintText(string text)
+        {
+            Console.WriteLine(text);
         }
     }
 }
