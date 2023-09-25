@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "MyYOLOApi": {
+      "commandName": "Project"
+    },
+    "Profile 1": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Users\\gera9\\source\\repos\\MyYOLOApi\\YOLO_View\\bin\\Debug\\net7.0-windows\\YOLO_View.exe"
+    }
+  }
+}
