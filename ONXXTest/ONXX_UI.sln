@@ -7,6 +7,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ONXX_UI", "ONXX_UI.csproj",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "My_ONNX_YOLO", "..\MyYOLOApi\My_ONNX_YOLO.csproj", "{C688D904-2F59-4C4D-8485-ABA490CAD77E}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "YOLO_View", "..\YOLO_View\YOLO_View.csproj", "{ADA1B622-6200-4625-9AE1-428830A33F16}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ViewModel", "..\ViewModel\ViewModel.csproj", "{2DF5031F-FB6A-4A6E-B540-95FE5F581001}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{C688D904-2F59-4C4D-8485-ABA490CAD77E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C688D904-2F59-4C4D-8485-ABA490CAD77E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C688D904-2F59-4C4D-8485-ABA490CAD77E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ADA1B622-6200-4625-9AE1-428830A33F16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ADA1B622-6200-4625-9AE1-428830A33F16}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ADA1B622-6200-4625-9AE1-428830A33F16}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ADA1B622-6200-4625-9AE1-428830A33F16}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2DF5031F-FB6A-4A6E-B540-95FE5F581001}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2DF5031F-FB6A-4A6E-B540-95FE5F581001}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2DF5031F-FB6A-4A6E-B540-95FE5F581001}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2DF5031F-FB6A-4A6E-B540-95FE5F581001}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

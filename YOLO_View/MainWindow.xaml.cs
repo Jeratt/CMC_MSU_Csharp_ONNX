@@ -31,6 +31,7 @@ namespace YOLO_View
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = new ViewData(new MessageBoxErrorReporter());
         }
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)

@@ -28,6 +28,8 @@ namespace ViewModel
 
         public ICommand CancelDetectionCommand { get; private set; }
 
+        public List<Detected> DetectedImages { get; private set; }
+
         public ViewData(IErrorReporter errorReporter)
         {
             this.errorReporter = errorReporter;
@@ -36,6 +38,8 @@ namespace ViewModel
 
             this.CancelDetectionCommand = new RelayCommand(CancelDetectionFunction);
             this.ChooseNewDirectoryCommand = new RelayCommand(ChooseNewDirectory);
+
+            DetectedImages = new List<Detected>();
 ;
             modelManager = new ModelManager(modelPath, fmmm, writer);
         }
@@ -72,8 +76,19 @@ namespace ViewModel
         public void WriteBytes(string path, byte[] bytes) => File.WriteAllBytes(path, bytes);
     }
 
-    class Detected
+    public class Detected
     {
-        public Bitmap
+        public Bitmap Image { get; protected set; }
+
+        public string ClassName { get; protected set; }
+
+        public double Confdidence { get; protected set; }
+
+        public Detected(Bitmap image, string className, double confdidence)
+        {
+            Image = image;
+            ClassName = className;
+            Confdidence = confdidence;
+        }
     }
 }
