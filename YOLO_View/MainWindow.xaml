@@ -6,16 +6,41 @@
         xmlns:local="clr-namespace:YOLO_View"
         mc:Ignorable="d"
         Title="MainWindow" x:Name="MyWindow" Height="450" Width="800">
-    <Grid>
+    <Grid Margin="0,0,0,-6">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="24*"/>
+            <RowDefinition Height="363*"/>
+            <RowDefinition Height="53*"/>
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <Menu Grid.ColumnSpan="2" Margin="0,0,0,-58">
+        <Menu Grid.ColumnSpan="2">
+
             <MenuItem Cursor="AppStarting" Header="File" Click="MenuItem_Click">
-                <MenuItem Header="Load" Command="{x:Static local:MainWindow.LoadImageFromFileCommand}"/>
+                <MenuItem Header="Load" Command="{Binding ChooseDirectoryCommand}"/>
             </MenuItem>
         </Menu>
-        <Button Content="Interrupt model" Margin="330,435,330,-58" RenderTransformOrigin="0.5,0.5" Grid.ColumnSpan="2"/>
+        <Button Content="Interrupt model" Command="{Binding CancelDetectionCommand}" Margin="130,5,130,5" RenderTransformOrigin="0.5,0.5" Grid.Row="2" Grid.Column="1"/>
+        <ListView Grid.Row="1" ItemsSource="{Binding }">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn>
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Source="{Binding Image}" Width="50" Height="50" />
+                                    <TextBlock Text="{Binding ClassName}" VerticalAlignment="Center" Margin="10,0,0,0" />
+                                    <TextBlock Text="{Binding Confidence}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <Image Grid.Column="1" Margin="68,52,68,51" Grid.Row="1" Stretch="UniformToFill"/>
+        <TextBlock HorizontalAlignment="Center" Grid.Row="2" TextWrapping="Wrap" Text="{Binding writer.Message}" VerticalAlignment="Center" Height="33" Width="380"/>
     </Grid>
 </Window>
