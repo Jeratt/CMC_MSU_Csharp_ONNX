@@ -7,12 +7,15 @@
         mc:Ignorable="d"
         Title="MainWindow" x:Name="MyWindow" Height="450" Width="800">
     <Grid>
-        <Image x:Name="pic" HorizontalAlignment="Left" Margin="51,27,0,63" Width="628" Height="400"/>
-        <Menu Grid.ColumnSpan="2">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Menu Grid.ColumnSpan="2" Margin="0,0,0,-58">
             <MenuItem Cursor="AppStarting" Header="File" Click="MenuItem_Click">
                 <MenuItem Header="Load" Command="{x:Static local:MainWindow.LoadImageFromFileCommand}"/>
             </MenuItem>
-
         </Menu>
+        <Button Content="Interrupt model" Margin="330,435,330,-58" RenderTransformOrigin="0.5,0.5" Grid.ColumnSpan="2"/>
     </Grid>
 </Window>
