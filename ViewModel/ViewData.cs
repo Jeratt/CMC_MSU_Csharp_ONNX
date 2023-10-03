@@ -8,6 +8,8 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Drawing.Processing;
+using System.ComponentModel;
+using System.Collections.ObjectModel;
 
 namespace ViewModel
 {
@@ -21,7 +23,7 @@ namespace ViewModel
         string openFolder();
     }
 
-    public class ViewData
+    public class ViewData: ViewModelBase, IDataErrorInfo
     {
         private ModelManager? modelManager;
 
@@ -29,17 +31,33 @@ namespace ViewModel
 
         private readonly IFolderManager folderManager;
 
-        private WriterMM writer;
+        public WriterMM Writer { get; set; }
 
         private FileManagerMM fmmm;
 
         private string modelPath = "https://storage.yandexcloud.net/dotnet4/tinyyolov2-8.onnx";
 
+        static CancellationTokenSource cts = new CancellationTokenSource();
+
         public ICommand ChooseNewDirectoryCommand { get; private set; }
 
         public ICommand CancelDetectionCommand { get; private set; }
 
-        public List<Detected> DetectedImages { get; private set; }
+        public ObservableCollection<Detected> DetectedImages { get; private set; }
+
+        public string Message { 
+            get { return this.Writer.Message; }
+            //protected set { this.Writer.Message = value; } 
+        }
+
+        public string Error {
+            get { return "Sorry, unhandled error occured"; }
+        }
+
+        public string this[string columnName]
+        {
+            get { return "Not implemented yet"; }
+        }
 
         public static readonly List<string> ImageExtensions = new List<string> { ".JPG" };
 
@@ -47,40 +65,58 @@ namespace ViewModel
         {
             this.errorReporter = errorReporter;
             this.folderManager = folderManager;
-            this.writer = new WriterMM();
+            this.Writer = new WriterMM();
             this.fmmm = new FileManagerMM();
 
             this.CancelDetectionCommand = new RelayCommand(CancelDetectionFunction);
             this.ChooseNewDirectoryCommand = new RelayCommand(ChooseNewDirectory);
 
-            DetectedImages = new List<Detected>();
+            DetectedImages = new ObservableCollection<Detected>();
 ;
-            modelManager = new ModelManager(modelPath, fmmm, writer);
+            modelManager = new ModelManager(modelPath, fmmm, Writer);
         }
 
-        private void CancelDetectionFunction()
+        public void CancelDetectionFunction()
         {
             throw new NotImplementedException();
         }
 
-        private void ChooseNewDirectory()
+        public async void ChooseNewDirectory()
         {
             string path = this.folderManager.openFolder();
             Image<Rgb24> img;
-            foreach(var filename in System.IO.Directory.GetFiles(path))
+            Image<Rgb24> final;
+            List<ObjectBox> lob;
+            foreach (var filename in System.IO.Directory.GetFiles(path))
             {
                 // if filename is image
                 if (ViewData.ImageExtensions.Contains(Path.GetExtension(filename).ToUpperInvariant()))
                 {
+                    DetectedImages.Clear();
                     img = SixLabors.ImageSharp.Image.Load<Rgb24>(filename);
+                    try
+                    {
+                        lob = await modelManager.PredictAsync(img, ViewData.cts.Token);
+                    }
+                    catch(Exception x)
+                    {
+                        this.errorReporter.reportError(x.Message);
+                        continue;
+                    }
+                    foreach(var ob in lob)
+                    {
+                        final = SixLabors.ImageSharp.Image.Load<Rgb24>("final.jpg");
+                        DetectedImages.Add(new Detected(final, ob.Class.ToString(), img, ob.Confidence));
+                    }
                 }
+                RaisePropertyChanged(nameof(DetectedImages));
             }
         }
     }
 
-    class WriterMM : IWriter
+    public class WriterMM : IWriter
     {
-        public string Message { get; protected set; }
+        public string Message { get; set; }
 
         public WriterMM()
         {
@@ -101,15 +137,18 @@ namespace ViewModel
 
     public class Detected
     {
-        public Bitmap Image { get; protected set; }
+        public Image<Rgb24> Image { get; protected set; }
+
+        public Image<Rgb24> OriPic { get; protected set; }
 
         public string ClassName { get; protected set; }
 
         public double Confdidence { get; protected set; }
 
-        public Detected(Bitmap image, string className, double confdidence)
+        public Detected(Image<Rgb24> image, string className, Image<Rgb24> oriPic, double confdidence)
         {
             Image = image;
+            OriPic = oriPic;
             ClassName = className;
             Confdidence = confdidence;
         }

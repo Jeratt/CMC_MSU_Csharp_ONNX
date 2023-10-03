@@ -50,7 +50,7 @@ namespace YOLO_View
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = new ViewData(new MessageBoxErrorReporter(), new FolderManager());
+            this.DataContext = new ViewData(new MessageBoxErrorReporter(), new FolderManager());
         }
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
