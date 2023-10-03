@@ -87,12 +87,12 @@ namespace ViewModel
             Image<Rgb24> img;
             Image<Rgb24> final;
             List<ObjectBox> lob;
+            DetectedImages.Clear();
             foreach (var filename in System.IO.Directory.GetFiles(path))
             {
                 // if filename is image
                 if (ViewData.ImageExtensions.Contains(Path.GetExtension(filename).ToUpperInvariant()))
                 {
-                    DetectedImages.Clear();
                     img = SixLabors.ImageSharp.Image.Load<Rgb24>(filename);
                     try
                     {
@@ -135,22 +135,22 @@ namespace ViewModel
         public void WriteBytes(string path, byte[] bytes) => File.WriteAllBytes(path, bytes);
     }
 
-    public class Detected
+    public record Detected
     {
-        public Image<Rgb24> Image { get; protected set; }
+        public Image<Rgb24> Image { get; init; }
 
-        public Image<Rgb24> OriPic { get; protected set; }
+        public Image<Rgb24> OriPic { get; init; }
 
-        public string ClassName { get; protected set; }
+        public string ClassName { get; init; }
 
-        public double Confdidence { get; protected set; }
+        public double Confidence { get; init; }
 
-        public Detected(Image<Rgb24> image, string className, Image<Rgb24> oriPic, double confdidence)
+        public Detected(Image<Rgb24> image, string className, Image<Rgb24> oriPic, double confidence)
         {
             Image = image;
             OriPic = oriPic;
             ClassName = className;
-            Confdidence = confdidence;
+            Confidence = confidence;
         }
     }
 }

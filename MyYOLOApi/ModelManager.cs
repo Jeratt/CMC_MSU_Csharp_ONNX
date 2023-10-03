@@ -69,7 +69,7 @@ namespace MyYOLOApi
             }
         }
 
-        public async Task<List<ObjectBox>> PredictAsync(Image<Rgb24> img, CancellationToken ct)
+        public async Task<List<ObjectBox>> PredictAsync(Image<Rgb24> img, CancellationToken ct, string prefix="")
         {
             int imageWidth = img.Width;
             int imageHeight = img.Height;
@@ -218,7 +218,7 @@ namespace MyYOLOApi
                             });
                         }
                     }
-            boundingBoxes.Save("boundingboxes.jpg");
+            boundingBoxes.Save(prefix + "boundingboxes.jpg");
 
             void Annotate(Image<Rgb24> target, IEnumerable<ObjectBox> objects)
             {
@@ -246,7 +246,7 @@ namespace MyYOLOApi
 
             var annotated = resized.Clone();
             Annotate(annotated, objects);
-            annotated.SaveAsJpeg("annotated.jpg");
+            annotated.SaveAsJpeg(prefix + "annotated.jpg");
 
             // Убираем дубликаты
             for (int i = 0; i < objects.Count; i++)
@@ -273,7 +273,7 @@ namespace MyYOLOApi
 
             var final = resized.Clone();
             Annotate(final, objects);
-            final.SaveAsJpeg("final.jpg");
+            final.SaveAsJpeg(prefix + "final.jpg");
             return objects;
         }
 

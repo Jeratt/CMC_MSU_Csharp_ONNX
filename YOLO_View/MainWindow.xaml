@@ -26,16 +26,16 @@
 
         <Image Source="{Binding SelectedValue.oriPic, ElementName=imagesLb, TargetNullValue=resources\\placeholder-image.jpg}" Grid.Column="1" Margin="68,52,68,51" Grid.Row="1" Stretch="UniformToFill"/>
         <TextBlock HorizontalAlignment="Center" Grid.Row="2" TextWrapping="Wrap" Text="{Binding Message, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" VerticalAlignment="Center" Height="33" Width="380"/>
-        <ListBox x:Name="imagesLb" DataContext="{Binding DetectedImages, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" Grid.Row="1" >
+        <ListBox x:Name="imagesLb" ItemsSource="{Binding DetectedImages, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="0,24,0,0" Grid.RowSpan="2">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Margin="5">
-                        <Image Width="100" Height="75" Source="{Binding Image}" />
-                        <TextBlock FontSize="16" Text="{Binding ClassName}" HorizontalAlignment="Center" />
-                        <TextBlock FontSize="16" Text="{Binding Confidence}" HorizontalAlignment="Center" />
+                        <Image Width="100" Height="75" Source="{Binding Path=Image}" />
+                        <TextBlock FontSize="16" Text="{Binding Path=ClassName}" HorizontalAlignment="Center" />
+                        <TextBlock FontSize="16" Text="{Binding Path=Confidence}" HorizontalAlignment="Center" />
                     </StackPanel>
                 </DataTemplate>
-            </ListBox.ItemTemplate> 
+            </ListBox.ItemTemplate>
         </ListBox>
     </Grid>
 </Window>
