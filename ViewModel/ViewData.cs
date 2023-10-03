@@ -4,6 +4,10 @@ using CommunityToolkit.Mvvm;
 using CommunityToolkit.Mvvm.Input;
 using System.Reflection.Metadata.Ecma335;
 using System.Drawing;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Drawing.Processing;
 
 namespace ViewModel
 {
@@ -12,11 +16,18 @@ namespace ViewModel
         void reportError(string message);
     }
 
+    public interface IFolderManager
+    {
+        string openFolder();
+    }
+
     public class ViewData
     {
         private ModelManager? modelManager;
 
         private readonly IErrorReporter errorReporter;
+
+        private readonly IFolderManager folderManager;
 
         private WriterMM writer;
 
@@ -30,9 +41,12 @@ namespace ViewModel
 
         public List<Detected> DetectedImages { get; private set; }
 
-        public ViewData(IErrorReporter errorReporter)
+        public static readonly List<string> ImageExtensions = new List<string> { ".JPG" };
+
+        public ViewData(IErrorReporter errorReporter, IFolderManager folderManager)
         {
             this.errorReporter = errorReporter;
+            this.folderManager = folderManager;
             this.writer = new WriterMM();
             this.fmmm = new FileManagerMM();
 
@@ -51,7 +65,16 @@ namespace ViewModel
 
         private void ChooseNewDirectory()
         {
-            throw new NotImplementedException();
+            string path = this.folderManager.openFolder();
+            Image<Rgb24> img;
+            foreach(var filename in System.IO.Directory.GetFiles(path))
+            {
+                // if filename is image
+                if (ViewData.ImageExtensions.Contains(Path.GetExtension(filename).ToUpperInvariant()))
+                {
+                    img = SixLabors.ImageSharp.Image.Load<Rgb24>(filename);
+                }
+            }
         }
     }
 
