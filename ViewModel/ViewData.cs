@@ -115,7 +115,7 @@ namespace ViewModel
                     {
                         //final = SixLabors.ImageSharp.Image.Load<Rgb24>("final.jpg");
                         final_name = name + "final.jpg";
-                        DetectedImages.Add(new Detected(final_name, ob.Class.ToString(), filename, ob.Confidence));
+                        DetectedImages.Add(new Detected(Path.GetFullPath(final_name), ob.Class.ToString(), filename, ob.Confidence));
                     }
                 }
                 RaisePropertyChanged(nameof(DetectedImages));
