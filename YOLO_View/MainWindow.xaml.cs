@@ -1,22 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Net.Cache;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Forms;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using ViewModel;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace YOLO_View
 {
@@ -77,17 +66,20 @@ namespace YOLO_View
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (!(value is string))
-                throw new NotImplementedException();
+            {
+                return new BitmapImage();
+            }
             else
             {
                 string x = (string)value;
-                return new BitmapImage(new Uri(@x, UriKind.Relative));
+                return new ImageSourceConverter().ConvertFromString(x) as ImageSource;
+                //return new BitmapImage(new Uri(@x, UriKind.Relative));
             }
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return value.ToString();
+            return DependencyProperty.UnsetValue;
         }
     }
 }
