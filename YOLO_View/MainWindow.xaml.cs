@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Cache;
 using System.Text;
@@ -45,6 +46,14 @@ namespace YOLO_View
         }
     }
 
+    public class ImageManager : IImageManager
+    {
+        public void SetSource(string source)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public partial class MainWindow : Window
     {
         public MainWindow()
@@ -60,6 +69,25 @@ namespace YOLO_View
         private void Button_Click(object sender, RoutedEventArgs e)
         {
 
+        }
+    }
+
+    public class ImagePathConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (!(value is string))
+                throw new NotImplementedException();
+            else
+            {
+                string x = (string)value;
+                return new BitmapImage(new Uri(@x, UriKind.Relative));
+            }
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value.ToString();
         }
     }
 }
