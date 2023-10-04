@@ -7,6 +7,10 @@
         mc:Ignorable="d"
         Title="MainWindow" x:Name="MyWindow" Height="450" Width="800">
 
+    <Window.Resources>
+        <local:ImagePathConverter x:Key="im_conv"/>
+    </Window.Resources>
+
     <Grid Margin="0,0,0,-6">
         <Grid.RowDefinitions>
             <RowDefinition Height="24*"/>
@@ -24,13 +28,13 @@
         </Menu>
         <Button Content="Interrupt model" Command="{Binding CancelDetectionCommand}" Margin="130,5,130,5" RenderTransformOrigin="0.5,0.5" Grid.Row="2" Grid.Column="1"/>
 
-        <Image Source="{Binding SelectedValue.oriPic, ElementName=imagesLb, TargetNullValue=resources\\placeholder-image.jpg}" Grid.Column="1" Margin="68,52,68,51" Grid.Row="1" Stretch="UniformToFill"/>
+        <Image Source="{Binding SelectedValue.OriPic, ElementName=imagesLb, TargetNullValue=resources\\placeholder-image.jpg}" Grid.Column="1" Margin="68,52,68,51" Grid.Row="1" Stretch="UniformToFill"/>
         <TextBlock HorizontalAlignment="Center" Grid.Row="2" TextWrapping="Wrap" Text="{Binding Message, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" VerticalAlignment="Center" Height="33" Width="380"/>
         <ListBox x:Name="imagesLb" ItemsSource="{Binding DetectedImages, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="0,24,0,0" Grid.RowSpan="2">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Margin="5">
-                        <Image Width="100" Height="75" Source="{Binding Path=Image}" />
+                        <Image Width="100" Height="75" Source="{Binding DetectedImage, Converter={StaticResource im_conv}}"/>
                         <TextBlock FontSize="16" Text="{Binding Path=ClassName}" HorizontalAlignment="Center" />
                         <TextBlock FontSize="16" Text="{Binding Path=Confidence}" HorizontalAlignment="Center" />
                     </StackPanel>

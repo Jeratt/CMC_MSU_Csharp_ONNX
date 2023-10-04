@@ -23,6 +23,11 @@ namespace ViewModel
         string openFolder();
     }
 
+    public interface IImageManager
+    {
+        void SetSource(string source);
+    }
+
     public class ViewData: ViewModelBase, IDataErrorInfo
     {
         private ModelManager? modelManager;
@@ -84,6 +89,8 @@ namespace ViewModel
         public async void ChooseNewDirectory()
         {
             string path = this.folderManager.openFolder();
+            string name;
+            string final_name;
             Image<Rgb24> img;
             Image<Rgb24> final;
             List<ObjectBox> lob;
@@ -96,7 +103,8 @@ namespace ViewModel
                     img = SixLabors.ImageSharp.Image.Load<Rgb24>(filename);
                     try
                     {
-                        lob = await modelManager.PredictAsync(img, ViewData.cts.Token);
+                        name = Path.GetFileNameWithoutExtension(filename);
+                        lob = await modelManager.PredictAsync(img, ViewData.cts.Token, name);
                     }
                     catch(Exception x)
                     {
@@ -105,8 +113,9 @@ namespace ViewModel
                     }
                     foreach(var ob in lob)
                     {
-                        final = SixLabors.ImageSharp.Image.Load<Rgb24>("final.jpg");
-                        DetectedImages.Add(new Detected(final, ob.Class.ToString(), img, ob.Confidence));
+                        //final = SixLabors.ImageSharp.Image.Load<Rgb24>("final.jpg");
+                        final_name = name + "final.jpg";
+                        DetectedImages.Add(new Detected(final_name, ob.Class.ToString(), filename, ob.Confidence));
                     }
                 }
                 RaisePropertyChanged(nameof(DetectedImages));
@@ -137,17 +146,21 @@ namespace ViewModel
 
     public record Detected
     {
-        public Image<Rgb24> Image { get; init; }
+        public string DetectedImage { get; init; }
 
-        public Image<Rgb24> OriPic { get; init; }
+        // public Bitmap DetectedImage { get; init; }
+
+        public string OriPic { get; init; }
+
+        // public Bitmap OriPic { get; init; }
 
         public string ClassName { get; init; }
 
         public double Confidence { get; init; }
 
-        public Detected(Image<Rgb24> image, string className, Image<Rgb24> oriPic, double confidence)
+        public Detected(string image, string className, string oriPic, double confidence)
         {
-            Image = image;
+            DetectedImage = image;
             OriPic = oriPic;
             ClassName = className;
             Confidence = confidence;
