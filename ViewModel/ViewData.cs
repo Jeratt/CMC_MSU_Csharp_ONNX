@@ -36,7 +36,7 @@ namespace ViewModel
 
         private readonly IFolderManager folderManager;
 
-        public WriterMM Writer { get; set; }
+        public TestWriterMM Writer { get; set; }
 
         private FileManagerMM fmmm;
 
@@ -44,16 +44,11 @@ namespace ViewModel
 
         static CancellationTokenSource cts = new CancellationTokenSource();
 
-        public ICommand ChooseNewDirectoryCommand { get; private set; }
+        public IAsyncCommand ChooseNewDirectoryCommand { get; private set; }
 
         public ICommand CancelDetectionCommand { get; private set; }
 
         public ObservableCollection<Detected> DetectedImages { get; private set; }
-
-        public string Message { 
-            get { return this.Writer.Message; }
-            //protected set { this.Writer.Message = value; } 
-        }
 
         public string Error {
             get { return "Sorry, unhandled error occured"; }
@@ -70,30 +65,32 @@ namespace ViewModel
         {
             this.errorReporter = errorReporter;
             this.folderManager = folderManager;
-            this.Writer = new WriterMM();
+            this.Writer = new TestWriterMM();
             this.fmmm = new FileManagerMM();
 
-            this.CancelDetectionCommand = new RelayCommand(CancelDetectionFunction);
-            this.ChooseNewDirectoryCommand = new RelayCommand(ChooseNewDirectory);
+            this.CancelDetectionCommand = new RelayCommand(() => { CancelDetectionFunction(this); });
+            this.ChooseNewDirectoryCommand = new AsyncCommand(async () => { await ChooseNewDirectoryAsync(); });
 
             DetectedImages = new ObservableCollection<Detected>();
 ;
             modelManager = new ModelManager(modelPath, fmmm, Writer);
         }
 
-        public void CancelDetectionFunction()
+        private void CancelDetectionFunction(object sender)
         {
-            throw new NotImplementedException();
+            ViewData.cts.Cancel();
         }
 
-        public async void ChooseNewDirectory()
+        private async Task ChooseNewDirectoryAsync()
         {
+            ViewData.cts = new CancellationTokenSource();
             string path = this.folderManager.openFolder();
             string name;
             string final_name;
             Image<Rgb24> img;
-            Image<Rgb24> final;
-            List<ObjectBox> lob;
+            List<Tuple<Task<List<ObjectBox>>, string>> lst_t = new List<Tuple<Task<List<ObjectBox>>, string>>();
+            List<Detected> detected_copy = new List<Detected>();
+            List<ObjectBox> lob_awaited;
             DetectedImages.Clear();
             foreach (var filename in System.IO.Directory.GetFiles(path))
             {
@@ -104,22 +101,34 @@ namespace ViewModel
                     try
                     {
                         name = Path.GetFileNameWithoutExtension(filename);
-                        lob = await modelManager.PredictAsync(img, ViewData.cts.Token, name);
+                        lst_t.Add(new Tuple<Task<List<ObjectBox>>, string>(modelManager.PredictAsync(img, ViewData.cts.Token, name), filename));
                     }
-                    catch(Exception x)
+                    catch (Exception x)
                     {
                         this.errorReporter.reportError(x.Message);
                         continue;
                     }
-                    foreach(var ob in lob)
+                }
+            }
+            await Task.Delay(3000);
+            foreach (var lob in lst_t)
+            {
+                final_name = Path.GetFileNameWithoutExtension(lob.Item2) + "final.jpg";
+                try
+                {
+                    lob_awaited = await lob.Item1;
+                    foreach (var ob in lob_awaited)
                     {
-                        //final = SixLabors.ImageSharp.Image.Load<Rgb24>("final.jpg");
-                        final_name = name + "final.jpg";
-                        DetectedImages.Add(new Detected(Path.GetFullPath(final_name), ob.Class.ToString(), filename, ob.Confidence));
+                        DetectedImages.Add(new Detected(Path.GetFullPath(final_name), ob.Class.ToString(), lob.Item2, ob.Confidence));
                     }
                 }
-                RaisePropertyChanged(nameof(DetectedImages));
+                catch(Exception x)
+                {
+                    this.errorReporter.reportError(x.Message);
+                    continue;
+                }
             }
+            RaisePropertyChanged(nameof(DetectedImages));
         }
     }
 
@@ -134,6 +143,13 @@ namespace ViewModel
         public void PrintText(string text)
         {
             Message = text;
+        }
+    }
+
+    public class TestWriterMM : IWriter
+    {
+        public void PrintText(string text)
+        {
         }
     }
 

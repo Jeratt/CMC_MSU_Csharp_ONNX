@@ -108,6 +108,7 @@ namespace MyYOLOApi
                 NamedOnnxValue.CreateFromTensor("image", input),
             };
 
+
             // Вычисляем предсказание нейросетью
             await detection_token.WaitAsync();
             try

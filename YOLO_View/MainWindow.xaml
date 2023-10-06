@@ -13,13 +13,13 @@
 
     <Grid Margin="0,0,0,-6" Height="440" VerticalAlignment="Bottom">
         <Grid.RowDefinitions>
-            <RowDefinition Height="32*"/>
-            <RowDefinition Height="355*"/>
+            <RowDefinition Height="26*"/>
+            <RowDefinition Height="361*"/>
             <RowDefinition Height="53*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
-            <ColumnDefinition/>
+            <ColumnDefinition Width="381*"/>
+            <ColumnDefinition Width="419*"/>
         </Grid.ColumnDefinitions>
         <Menu Grid.ColumnSpan="2">
             <MenuItem Cursor="AppStarting" Header="File" Click="MenuItem_Click" Height="34">
@@ -28,13 +28,12 @@
         </Menu>
         <Button Content="Interrupt model" Command="{Binding CancelDetectionCommand}" Margin="130,5,130,5" RenderTransformOrigin="0.5,0.5" Grid.Row="2" Grid.Column="1"/>
 
-        <Image Source="{Binding SelectedValue.OriPic, ElementName=imagesLb, TargetNullValue=resources\\placeholder-image.jpg}" Grid.Column="1" Margin="68,52,68,51" Grid.Row="1" Stretch="UniformToFill"/>
-        <TextBlock HorizontalAlignment="Center" Grid.Row="2" TextWrapping="Wrap" Text="{Binding Message}" VerticalAlignment="Center" Height="33" Width="380"/>
+        <Image Source="{Binding SelectedValue.DetectedImage, ElementName=imagesLb, TargetNullValue=resources\\placeholder-image.jpg}" Grid.Column="1" Margin="45,50,23,21" Grid.Row="1" Stretch="UniformToFill"/>
         <ListBox x:Name="imagesLb" ItemsSource="{Binding DetectedImages, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" d:ItemsSource="{d:SampleData ItemCount=5}" Grid.Row="1">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Margin="5">
-                        <Image Width="200" Height="200" Source="{Binding DetectedImage, Converter={StaticResource im_conv}, TargetNullValue=resources\\placeholder-image.jpg}"/>
+                        <Image Width="150" Height="150" Source="{Binding OriPic, Converter={StaticResource im_conv}, TargetNullValue=resources\\placeholder-image.jpg}"/>
                         <TextBlock FontSize="16" Text="{Binding Path=ClassName}" HorizontalAlignment="Center" />
                         <TextBlock FontSize="16" Text="{Binding Path=Confidence}" HorizontalAlignment="Center" />
                     </StackPanel>
