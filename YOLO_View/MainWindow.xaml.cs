@@ -47,6 +47,7 @@ namespace YOLO_View
     {
         public MainWindow()
         {
+            var x = System.Environment.CurrentManagedThreadId;
             InitializeComponent();
             this.DataContext = new ViewData(new MessageBoxErrorReporter(), new FolderManager());
         }
