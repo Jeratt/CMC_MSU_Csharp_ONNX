@@ -31,6 +31,8 @@ namespace ViewModel
 
     public class ViewData: ViewModelBase, IDataErrorInfo
     {
+        private static bool errorReported = false;
+
         private ModelManager? modelManager;
 
         private readonly IErrorReporter errorReporter;
@@ -88,6 +90,7 @@ namespace ViewModel
         private async Task ChooseNewDirectoryAsync()
         {
             ViewData.cts = new CancellationTokenSource();
+            ViewData.errorReported = false;
             string path = this.folderManager.openFolder();
             string name;
             string final_name;
@@ -110,7 +113,11 @@ namespace ViewModel
                     }
                     catch (Exception x)
                     {
-                        this.errorReporter.reportError(x.Message);
+                        if (!ViewData.errorReported)
+                        {
+                            this.errorReporter.reportError(x.Message);
+                            ViewData.errorReported = true;
+                        }
                         continue;
                     }
                 }
@@ -129,7 +136,11 @@ namespace ViewModel
                 }
                 catch (Exception x)
                 {
-                    this.errorReporter.reportError(x.Message);
+                    if (!ViewData.errorReported)
+                    {
+                        this.errorReporter.reportError(x.Message);
+                        ViewData.errorReported = true;
+                    }
                     continue;
                 }
             }

@@ -117,10 +117,10 @@ namespace MyYOLOApi
                 IDisposableReadOnlyCollection<DisposableNamedOnnxValue> results;
                 lock (lock_token)
                 {
+                    ct.ThrowIfCancellationRequested();
                     this.Init();
                     results = session.Run(inputs);
                 }
-                ct.ThrowIfCancellationRequested();
 
                 // Получаем результаты
                 var outputs = results.First().AsTensor<float>();
