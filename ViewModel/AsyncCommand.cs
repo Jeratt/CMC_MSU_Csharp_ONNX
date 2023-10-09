@@ -1,4 +1,5 @@
-﻿using System;
+﻿//using Catel.MVVM;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,64 +14,58 @@ namespace ViewModel
         bool CanExecute();
     }
 
-    public class AsyncCommand : IAsyncCommand
+    public class AsyncRelayCommand : IAsyncCommand
     {
-        public event EventHandler CanExecuteChanged;
+        private readonly Func<object, bool> canExecute;
+        private readonly Func<object, Task> executeAsync;
+        private bool isExecuting;
 
-        private bool _isExecuting;
-        private readonly Func<Task> _execute;
-        private readonly Func<bool> _canExecute;
-        //private readonly IErrorHandler _errorHandler;
-
-        public AsyncCommand(
-            Func<Task> execute,
-            Func<bool> canExecute = null)
-            //IErrorHandler errorHandler = null)
+        public AsyncRelayCommand(Func<object, Task> executeAsync, Func<object, bool> canExecute = null)
         {
-            _execute = execute;
-            _canExecute = canExecute;
-            //_errorHandler = errorHandler;
+            this.executeAsync = executeAsync;
+            this.canExecute = canExecute;
+        }
+
+        public event EventHandler? CanExecuteChanged
+        {
+            add { CommandManager.RequerySuggested += value; }
+            remove { CommandManager.RequerySuggested -= value; }
+        }
+
+        public bool CanExecute(object? parameter)
+        {
+            if (isExecuting)
+            {
+                return false;
+            }
+            else
+            {
+                return canExecute is null || canExecute(parameter);
+            }
         }
 
         public bool CanExecute()
         {
-            return !_isExecuting && (_canExecute?.Invoke() ?? true);
+            throw new NotImplementedException();
         }
 
-        public async Task ExecuteAsync()
+        public void Execute(object? parameter)
         {
-            if (CanExecute())
+            if (!isExecuting)
             {
-                try
+                isExecuting = true;
+                executeAsync(parameter).ContinueWith(_ =>
                 {
-                    _isExecuting = true;
-                    await _execute();
-                }
-                finally
-                {
-                    _isExecuting = false;
-                }
+                    isExecuting = false;
+                    CommandManager.InvalidateRequerySuggested();
+                }, scheduler: TaskScheduler.FromCurrentSynchronizationContext());
             }
-
-            RaiseCanExecuteChanged();
         }
 
-        public void RaiseCanExecuteChanged()
+        public Task ExecuteAsync()
         {
-            CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+            throw new NotImplementedException();
         }
-
-        #region Explicit implementations
-        bool ICommand.CanExecute(object parameter)
-        {
-            return CanExecute();
-        }
-
-        void ICommand.Execute(object parameter)
-        {
-            ExecuteAsync();//.FireAndForgetSafeAsync(_errorHandler);
-        }
-        #endregion
     }
 
 }

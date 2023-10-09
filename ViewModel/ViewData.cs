@@ -69,7 +69,7 @@ namespace ViewModel
             this.fmmm = new FileManagerMM();
 
             this.CancelDetectionCommand = new RelayCommand(() => { CancelDetectionFunction(this); });
-            this.ChooseNewDirectoryCommand = new AsyncCommand(async () => { await ChooseNewDirectoryAsync(); });
+            this.ChooseNewDirectoryCommand = new AsyncRelayCommand(async _ => await ChooseNewDirectoryAsync() );
 
             DetectedImages = new ObservableCollection<Detected>();
 ;
@@ -110,7 +110,7 @@ namespace ViewModel
                     }
                 }
             }
-            await Task.Delay(3000);
+            //await Task.Delay(3000);
             foreach (var lob in lst_t)
             {
                 final_name = Path.GetFileNameWithoutExtension(lob.Item2) + "final.jpg";
