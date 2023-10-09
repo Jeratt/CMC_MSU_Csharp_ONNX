@@ -10,6 +10,7 @@ using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Drawing.Processing;
 using System.ComponentModel;
 using System.Collections.ObjectModel;
+using System.Xml.Linq;
 
 namespace ViewModel
 {
@@ -69,7 +70,10 @@ namespace ViewModel
             this.fmmm = new FileManagerMM();
 
             this.CancelDetectionCommand = new RelayCommand(() => { CancelDetectionFunction(this); });
-            this.ChooseNewDirectoryCommand = new AsyncRelayCommand(async _ => await ChooseNewDirectoryAsync() );
+            this.ChooseNewDirectoryCommand = new AsyncRelayCommand(async _ =>
+            {
+                await ChooseNewDirectoryAsync();
+            } );
 
             DetectedImages = new ObservableCollection<Detected>();
 ;
@@ -101,6 +105,7 @@ namespace ViewModel
                     try
                     {
                         name = Path.GetFileNameWithoutExtension(filename);
+                        //this.ProcessAsync(img, filename);
                         lst_t.Add(new Tuple<Task<List<ObjectBox>>, string>(modelManager.PredictAsync(img, ViewData.cts.Token, name), filename));
                     }
                     catch (Exception x)
@@ -122,13 +127,19 @@ namespace ViewModel
                         DetectedImages.Add(new Detected(Path.GetFullPath(final_name), ob.Class.ToString(), lob.Item2, ob.Confidence));
                     }
                 }
-                catch(Exception x)
+                catch (Exception x)
                 {
                     this.errorReporter.reportError(x.Message);
                     continue;
                 }
             }
             RaisePropertyChanged(nameof(DetectedImages));
+        }
+
+        private async Task<List<ObjectBox>> ProcessAsync(Image<Rgb24> img, string name)
+        {
+            List<ObjectBox> lob = await modelManager.PredictAsync(img, ViewData.cts.Token, name);
+            return lob;
         }
     }
 
