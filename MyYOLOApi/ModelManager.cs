@@ -29,6 +29,14 @@ namespace MyYOLOApi
         static object lock_token = new object();
         public string ModelPath { get; set; }
 
+        public static string[] labels = new string[]
+            {
+                "aeroplane", "bicycle", "bird", "boat", "bottle",
+                "bus", "car", "cat", "chair", "cow",
+                "diningtable", "dog", "horse", "motorbike", "person",
+                "pottedplant", "sheep", "sofa", "train", "tvmonitor"
+            };
+
         private IFileManager fileManager;
 
         private IWriter writer;

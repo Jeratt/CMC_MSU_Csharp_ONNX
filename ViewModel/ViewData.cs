@@ -131,7 +131,7 @@ namespace ViewModel
                     lob_awaited = await lob.Item1;
                     foreach (var ob in lob_awaited)
                     {
-                        DetectedImages.Add(new Detected(Path.GetFullPath(final_name), ob.Class.ToString(), lob.Item2, ob.Confidence));
+                        DetectedImages.Add(new Detected(Path.GetFullPath(final_name), ob.Class, lob.Item2, ob.Confidence));
                     }
                 }
                 catch (Exception x)
@@ -196,11 +196,11 @@ namespace ViewModel
 
         public double Confidence { get; init; }
 
-        public Detected(string image, string className, string oriPic, double confidence)
+        public Detected(string image, int className, string oriPic, double confidence)
         {
             DetectedImage = image;
             OriPic = oriPic;
-            ClassName = className;
+            ClassName = ModelManager.labels[className];
             Confidence = confidence;
         }
     }

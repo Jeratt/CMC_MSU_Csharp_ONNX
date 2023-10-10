@@ -3,12 +3,19 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
         xmlns:local="clr-namespace:YOLO_View" xmlns:viewmodel="clr-namespace:ViewModel;assembly=ViewModel" d:DataContext="{d:DesignInstance Type=viewmodel:ViewData}"
         mc:Ignorable="d"
         Title="MainWindow" x:Name="MyWindow" Height="450" Width="800">
 
     <Window.Resources>
         <local:ImagePathConverter x:Key="im_conv"/>
+        <CollectionViewSource x:Key="cvsImages" Source="{Binding DetectedImages}" >
+            <CollectionViewSource.SortDescriptions>
+                <scm:SortDescription PropertyName="ClassName" Direction="Ascending"/>
+                <scm:SortDescription PropertyName="Confidence" Direction="Descending"/>
+            </CollectionViewSource.SortDescriptions>
+        </CollectionViewSource>
     </Window.Resources>
 
     <Grid Margin="0,0,0,-6" Height="440" VerticalAlignment="Bottom">
@@ -28,8 +35,8 @@
         </Menu>
         <Button Content="Interrupt model" Command="{Binding CancelDetectionCommand}" Margin="130,5,130,5" RenderTransformOrigin="0.5,0.5" Grid.Row="2" Grid.Column="1"/>
 
-        <Image Source="{Binding SelectedValue.DetectedImage, ElementName=imagesLb, TargetNullValue=resources\\placeholder-image.jpg}" Grid.Column="1" Margin="45,50,23,21" Grid.Row="1" Stretch="UniformToFill"/>
-        <ListBox x:Name="imagesLb" ItemsSource="{Binding DetectedImages, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" d:ItemsSource="{d:SampleData ItemCount=5}" Grid.Row="1">
+        <Image Source="{Binding SelectedValue.DetectedImage, ElementName=imagesLb, TargetNullValue=resources\\placeholder-image.jpg}" Grid.Column="1" Margin="34,18,34,53" Grid.Row="1" Stretch="UniformToFill"/>
+        <ListBox x:Name="imagesLb" ItemsSource="{Binding Source={StaticResource cvsImages}, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" d:ItemsSource="{d:SampleData ItemCount=5}" Grid.Row="1">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Margin="5">
