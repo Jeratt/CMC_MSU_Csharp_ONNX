@@ -62,7 +62,7 @@ namespace ViewModel
             get { return "Not implemented yet"; }
         }
 
-        public static readonly List<string> ImageExtensions = new List<string> { ".JPG" };
+        public static readonly List<string> ImageExtensions = new List<string> { ".JPG", ".JPEG"};
 
         public ViewData(IErrorReporter errorReporter, IFolderManager folderManager)
         {
@@ -84,7 +84,14 @@ namespace ViewModel
 
         private void CancelDetectionFunction(object sender)
         {
-            ViewData.cts.Cancel();
+            try
+            {
+                ViewData.cts.Cancel();
+            }
+            catch(Exception x)
+            {
+                return;
+            }
         }
 
         private async Task ChooseNewDirectoryAsync()

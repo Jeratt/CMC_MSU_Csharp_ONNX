@@ -123,12 +123,14 @@ namespace MyYOLOApi
 
                 // Вычисляем предсказание нейросетью
                 IDisposableReadOnlyCollection<DisposableNamedOnnxValue> results;
+                ct.ThrowIfCancellationRequested();
                 lock (lock_token)
                 {
                     ct.ThrowIfCancellationRequested();
                     this.Init();
                     results = session.Run(inputs);
                 }
+                ct.ThrowIfCancellationRequested();
 
                 // Получаем результаты
                 var outputs = results.First().AsTensor<float>();
