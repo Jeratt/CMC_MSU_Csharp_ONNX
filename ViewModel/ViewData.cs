@@ -47,7 +47,7 @@ namespace ViewModel
 
         static CancellationTokenSource cts = new CancellationTokenSource();
 
-        public IAsyncCommand ChooseNewDirectoryCommand { get; private set; }
+        public AsyncRelayCommand ChooseNewDirectoryCommand { get; private set; }
 
         public ICommand CancelDetectionCommand { get; private set; }
 

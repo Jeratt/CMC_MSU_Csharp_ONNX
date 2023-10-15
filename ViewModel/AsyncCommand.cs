@@ -8,13 +8,7 @@ using System.Windows.Input;
 
 namespace ViewModel
 {
-    public interface IAsyncCommand : ICommand
-    {
-        Task ExecuteAsync();
-        bool CanExecute();
-    }
-
-    public class AsyncRelayCommand : IAsyncCommand
+    public class AsyncRelayCommand : ICommand
     {
         private readonly Func<object, bool> canExecute;
         private readonly Func<object, Task> executeAsync;
@@ -44,11 +38,6 @@ namespace ViewModel
             }
         }
 
-        public bool CanExecute()
-        {
-            throw new NotImplementedException();
-        }
-
         public void Execute(object? parameter)
         {
             if (!isExecuting)
@@ -61,11 +50,5 @@ namespace ViewModel
                 }, scheduler: TaskScheduler.FromCurrentSynchronizationContext());
             }
         }
-
-        public Task ExecuteAsync()
-        {
-            throw new NotImplementedException();
-        }
     }
-
 }
