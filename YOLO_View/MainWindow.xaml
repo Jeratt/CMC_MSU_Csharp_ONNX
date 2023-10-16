@@ -3,16 +3,49 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:YOLO_View"
+        xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+        xmlns:local="clr-namespace:YOLO_View" xmlns:viewmodel="clr-namespace:ViewModel;assembly=ViewModel" d:DataContext="{d:DesignInstance Type=viewmodel:ViewData}"
         mc:Ignorable="d"
         Title="MainWindow" x:Name="MyWindow" Height="450" Width="800">
-    <Grid>
-        <Image x:Name="pic" HorizontalAlignment="Left" Margin="51,27,0,63" Width="628" Height="400"/>
-        <Menu Grid.ColumnSpan="2">
-            <MenuItem Cursor="AppStarting" Header="File" Click="MenuItem_Click">
-                <MenuItem Header="Load" Command="{x:Static local:MainWindow.LoadImageFromFileCommand}"/>
-            </MenuItem>
 
+    <Window.Resources>
+        <local:ImagePathConverter x:Key="im_conv"/>
+        <CollectionViewSource x:Key="cvsImages" Source="{Binding DetectedImages}" >
+            <CollectionViewSource.SortDescriptions>
+                <scm:SortDescription PropertyName="ClassName" Direction="Ascending"/>
+                <scm:SortDescription PropertyName="Confidence" Direction="Descending"/>
+            </CollectionViewSource.SortDescriptions>
+        </CollectionViewSource>
+    </Window.Resources>
+
+    <Grid Margin="0,0,0,-6" Height="440" VerticalAlignment="Bottom">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="26*"/>
+            <RowDefinition Height="361*"/>
+            <RowDefinition Height="53*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="381*"/>
+            <ColumnDefinition Width="419*"/>
+        </Grid.ColumnDefinitions>
+        <Menu Grid.ColumnSpan="2">
+            <MenuItem Cursor="AppStarting" Header="File" Click="MenuItem_Click" Height="34">
+                <MenuItem Header="Choose Directory" Command="{Binding ChooseNewDirectoryCommand}"/>
+            </MenuItem>
         </Menu>
+        <Button Content="Interrupt model" Command="{Binding CancelDetectionCommand}" Margin="130,5,130,5" RenderTransformOrigin="0.5,0.5" Grid.Row="2" Grid.Column="1"/>
+
+        <Image Source="{Binding SelectedValue.DetectedImage, ElementName=imagesLb, TargetNullValue=resources\\placeholder-image.jpg}" Grid.Column="1" Margin="34,18,34,53" Grid.Row="1" Stretch="UniformToFill"/>
+        <ListBox x:Name="imagesLb" ItemsSource="{Binding Source={StaticResource cvsImages}, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" d:ItemsSource="{d:SampleData ItemCount=5}" Grid.Row="1">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Margin="5">
+                        <Image Width="150" Height="150" Source="{Binding OriPic, TargetNullValue=resources\\placeholder-image.jpg}"/>
+                        <TextBlock FontSize="16" Text="{Binding Path=ClassName}" HorizontalAlignment="Center" />
+                        <TextBlock FontSize="16" Text="{Binding Path=Confidence}" HorizontalAlignment="Center" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
     </Grid>
 </Window>
