@@ -227,35 +227,11 @@ namespace MyYOLOApi
                                 });
                             }
                         }
-                boundingBoxes.Save(prefix + "boundingboxes.jpg");
-
-                void Annotate(Image<Rgb24> target, IEnumerable<ObjectBox> objects)
-                {
-                    foreach (var objbox in objects)
-                    {
-                        target.Mutate(ctx =>
-                        {
-                            ctx.DrawPolygon(
-                                Pens.Solid(Color.Blue, 2),
-                                new PointF[] {
-                            new PointF((float)objbox.XMin, (float)objbox.YMin),
-                            new PointF((float)objbox.XMin, (float)objbox.YMax),
-                            new PointF((float)objbox.XMax, (float)objbox.YMax),
-                            new PointF((float)objbox.XMax, (float)objbox.YMin)
-                                });
-
-                            ctx.DrawText(
-                                $"{labels[objbox.Class]}",
-                                SystemFonts.Families.First().CreateFont(16),
-                                Color.Blue,
-                                new PointF((float)objbox.XMin, (float)objbox.YMax));
-                        });
-                    }
-                }
+                // boundingBoxes.Save(prefix + "boundingboxes.jpg");
 
                 var annotated = resized.Clone();
                 Annotate(annotated, objects);
-                annotated.SaveAsJpeg(prefix + "annotated.jpg");
+                // annotated.SaveAsJpeg(prefix + "annotated.jpg");
 
                 // Убираем дубликаты
                 for (int i = 0; i < objects.Count; i++)
@@ -280,11 +256,28 @@ namespace MyYOLOApi
                     }
                 }
 
-                var final = resized.Clone();
-                Annotate(final, objects);
-                final.SaveAsJpeg(prefix + "final.jpg");
+                //final.SaveAsJpeg(prefix + "final.jpg");
                 return objects;
             }, ct, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+        }
+
+        public Image<Rgb24> GetFinal(Image<Rgb24> img, List<ObjectBox> objects)
+        {
+            // Размер изображения
+            const int TargetSize = 416;
+
+            var resized = img.Clone(x =>
+            {
+                x.Resize(new ResizeOptions
+                {
+                    Size = new Size(TargetSize, TargetSize),
+                    Mode = ResizeMode.Pad // Дополнить изображение до указанного размера с сохранением пропорций
+                });
+            });
+
+            var final = resized.Clone();
+            Annotate(final, objects);
+            return final;
         }
 
         public void LoadModel()
@@ -299,6 +292,30 @@ namespace MyYOLOApi
                     this.writer.PrintText("Model successfully downloaded");
                 }
                 //this.fileManager.PrintText(Path.GetFullPath("tinyyolo2-8.onnx"));
+            }
+        }
+
+        private static void Annotate(Image<Rgb24> target, IEnumerable<ObjectBox> objects)
+        {
+            foreach (var objbox in objects)
+            {
+                target.Mutate(ctx =>
+                {
+                    ctx.DrawPolygon(
+                        Pens.Solid(Color.Blue, 2),
+                        new PointF[] {
+                            new PointF((float)objbox.XMin, (float)objbox.YMin),
+                            new PointF((float)objbox.XMin, (float)objbox.YMax),
+                            new PointF((float)objbox.XMax, (float)objbox.YMax),
+                            new PointF((float)objbox.XMax, (float)objbox.YMin)
+                        });
+
+                    ctx.DrawText(
+                        $"{labels[objbox.Class]}",
+                        SystemFonts.Families.First().CreateFont(16),
+                        Color.Blue,
+                        new PointF((float)objbox.XMin, (float)objbox.YMax));
+                });
             }
         }
     }

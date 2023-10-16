@@ -11,6 +11,8 @@ using SixLabors.ImageSharp.Drawing.Processing;
 using System.ComponentModel;
 using System.Collections.ObjectModel;
 using System.Xml.Linq;
+using System.Windows.Media;
+using ImageSharp.WpfImageSource;
 
 namespace ViewModel
 {
@@ -102,7 +104,7 @@ namespace ViewModel
             string name;
             string final_name;
             Image<Rgb24> img;
-            List<Tuple<Task<List<ObjectBox>>, string>> lst_t = new List<Tuple<Task<List<ObjectBox>>, string>>();
+            List<Tuple<Task<List<ObjectBox>>, string, Image<Rgb24>>> lst_t = new List<Tuple<Task<List<ObjectBox>>, string, Image<Rgb24>>>();
             List<Detected> detected_copy = new List<Detected>();
             List<ObjectBox> lob_awaited;
             DetectedImages.Clear();
@@ -116,7 +118,7 @@ namespace ViewModel
                     {
                         name = Path.GetFileNameWithoutExtension(filename);
                         //this.ProcessAsync(img, filename);
-                        lst_t.Add(new Tuple<Task<List<ObjectBox>>, string>(modelManager.PredictAsync(img, ViewData.cts.Token, name), filename));
+                        lst_t.Add(new Tuple<Task<List<ObjectBox>>, string, Image<Rgb24>>(modelManager.PredictAsync(img, ViewData.cts.Token, name), filename, img));
                     }
                     catch (Exception x)
                     {
@@ -138,7 +140,9 @@ namespace ViewModel
                     lob_awaited = await lob.Item1;
                     foreach (var ob in lob_awaited)
                     {
-                        DetectedImages.Add(new Detected(Path.GetFullPath(final_name), ob.Class, lob.Item2, ob.Confidence));
+                        var oriImage = lob.Item3;
+                        var finalImage = this.modelManager.GetFinal(oriImage, lob_awaited);
+                        DetectedImages.Add(new Detected(finalImage, ob.Class, lob.Item2, ob.Confidence));
                     }
                 }
                 catch (Exception x)
@@ -191,7 +195,7 @@ namespace ViewModel
 
     public record Detected
     {
-        public string DetectedImage { get; init; }
+        public ImageSharpImageSource<Rgb24> DetectedImage { get; init; }
 
         // public Bitmap DetectedImage { get; init; }
 
@@ -203,9 +207,9 @@ namespace ViewModel
 
         public double Confidence { get; init; }
 
-        public Detected(string image, int className, string oriPic, double confidence)
+        public Detected(Image<Rgb24> image, int className, string oriPic, double confidence)
         {
-            DetectedImage = image;
+            DetectedImage = new ImageSharpImageSource<Rgb24>(image);
             OriPic = oriPic;
             ClassName = ModelManager.labels[className];
             Confidence = confidence;
