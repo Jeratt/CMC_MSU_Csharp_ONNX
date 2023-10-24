@@ -13,6 +13,12 @@ using System.Collections.ObjectModel;
 using System.Xml.Linq;
 using System.Windows.Media;
 using ImageSharp.WpfImageSource;
+using ImageVault;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Formats;
+using static System.Windows.Forms.DataFormats;
 
 namespace ViewModel
 {
@@ -47,11 +53,15 @@ namespace ViewModel
 
         private string modelPath = "https://storage.yandexcloud.net/dotnet4/tinyyolov2-8.onnx";
 
+        private YOLOVault vault;
+
         static CancellationTokenSource cts = new CancellationTokenSource();
 
         public AsyncRelayCommand ChooseNewDirectoryCommand { get; private set; }
 
         public ICommand CancelDetectionCommand { get; private set; }
+
+        public ICommand ClearVaultCommand { get; private set; }
 
         public ObservableCollection<Detected> DetectedImages { get; private set; }
 
@@ -72,8 +82,10 @@ namespace ViewModel
             this.folderManager = folderManager;
             this.Writer = new TestWriterMM();
             this.fmmm = new FileManagerMM();
+            this.vault = new YOLOVault();
 
             this.CancelDetectionCommand = new RelayCommand(() => { CancelDetectionFunction(this); });
+            this.ClearVaultCommand = new RelayCommand(() => { ClearVault(this); });
             this.ChooseNewDirectoryCommand = new AsyncRelayCommand(async _ =>
             {
                 await ChooseNewDirectoryAsync();
@@ -82,6 +94,21 @@ namespace ViewModel
             DetectedImages = new ObservableCollection<Detected>();
 ;
             modelManager = new ModelManager(modelPath, fmmm, Writer);
+
+            this.Init();
+        }
+
+        private void ClearVault(object sender)
+        {
+            this.DetectedImages.Clear();
+            try
+            {
+                this.vault.ClearVault();
+            }
+            catch(Exception ex)
+            {
+                this.errorReporter.reportError(ex.Message);
+            }
         }
 
         private void CancelDetectionFunction(object sender)
@@ -113,6 +140,9 @@ namespace ViewModel
                 // if filename is image
                 if (ViewData.ImageExtensions.Contains(Path.GetExtension(filename).ToUpperInvariant()))
                 {
+                    if (this.vault.CheckFile(filename))
+                    { continue; }
+
                     img = SixLabors.ImageSharp.Image.Load<Rgb24>(filename);
                     try
                     {
@@ -142,7 +172,7 @@ namespace ViewModel
                     {
                         var oriImage = lob.Item3;
                         var finalImage = this.modelManager.GetFinal(oriImage, lob_awaited);
-                        DetectedImages.Add(new Detected(finalImage, ob.Class, lob.Item2, ob.Confidence));
+                        DetectedImages.Add(new Detected(finalImage, ob.Class, oriImage, ob.Confidence));
                     }
                 }
                 catch (Exception x)
@@ -156,12 +186,37 @@ namespace ViewModel
                 }
             }
             RaisePropertyChanged(nameof(DetectedImages));
+            this.UpdateVault();
         }
 
-        private async Task<List<ObjectBox>> ProcessAsync(Image<Rgb24> img, string name)
+        private void UpdateVault()
         {
-            List<ObjectBox> lob = await modelManager.PredictAsync(img, ViewData.cts.Token, name);
-            return lob;
+            List<SerializableDetected> lst = new List<SerializableDetected>();
+            byte[] detectedImage, oriImage;
+            foreach (var item in this.DetectedImages)
+            {
+                detectedImage = item.DetectedImage.ToByteArray();
+                oriImage = item.OriPic.ToByteArray();
+                lst.Add(new SerializableDetected(detectedImage, oriImage, item.ClassName, item.Confidence, item.OriPic.Width, item.OriPic.Height));
+            }
+            this.vault.UpdateVault(lst);
+        }
+
+        public void Init()
+        {
+            this.DetectedImages.Clear();
+            List<SerializableDetected>? stored = this.vault.LoadFromVault();
+            if (stored is null)
+                return;
+            Image<Rgb24> detectedIm, oriIm;
+            foreach (var item in stored)
+            {
+                detectedIm = SixLabors.ImageSharp.Image.LoadPixelData<Rgb24>(item.DetectedImage, 416, 416);
+                //detectedIm = ImageDecoder.Decode(item.DetectedImage);
+                oriIm = SixLabors.ImageSharp.Image.LoadPixelData<Rgb24>(item.OriPic, (int)item.Width, (int)item.Height);
+                this.DetectedImages.Add(new Detected(detectedIm, item.ClassName, oriIm, item.Confidence));
+            }
+            RaisePropertyChanged(nameof(DetectedImages));
         }
     }
 
@@ -199,7 +254,7 @@ namespace ViewModel
 
         // public Bitmap DetectedImage { get; init; }
 
-        public string OriPic { get; init; }
+        public ImageSharpImageSource<Rgb24> OriPic { get; init; }
 
         // public Bitmap OriPic { get; init; }
 
@@ -207,12 +262,75 @@ namespace ViewModel
 
         public double Confidence { get; init; }
 
-        public Detected(Image<Rgb24> image, int className, string oriPic, double confidence)
+        public Detected(Image<Rgb24> image, int className, Image<Rgb24> oriPic, double confidence)
         {
             DetectedImage = new ImageSharpImageSource<Rgb24>(image);
-            OriPic = oriPic;
+            OriPic = new ImageSharpImageSource<Rgb24>(oriPic);
             ClassName = ModelManager.labels[className];
             Confidence = confidence;
+        }
+
+        public Detected(Image<Rgb24> image, string className, Image<Rgb24> oriPic, double confidence)
+        {
+            DetectedImage = new ImageSharpImageSource<Rgb24>(image);
+            OriPic = new ImageSharpImageSource<Rgb24>(oriPic);
+            ClassName = className;
+            Confidence = confidence;
+        }
+    }
+
+    class YOLOVault : Vault
+    {
+        public override bool CheckFile(string path)
+        {
+/*            if (File.Exists(path))
+            {
+                return true;
+            }*/
+            return false;
+        }
+
+        public override void ClearVault()
+        {
+            File.Delete(this.path);
+        }
+
+        public override List<SerializableDetected>? LoadFromVault()
+        {
+            if (!File.Exists(this.path))
+            {
+                return null;
+            }
+            var detected = JsonConvert.DeserializeObject<List<SerializableDetected>>(File.ReadAllText(this.path));
+            return detected;
+        }
+
+        public override void UpdateVault(List<SerializableDetected> lst)
+        {
+            if (!File.Exists(this.path))
+            {
+                File.Create(this.path);
+            }
+            string filename = Path.GetFileNameWithoutExtension(this.path);
+            string dir = Path.GetDirectoryName(this.path);
+            //string dir = Environment.CurrentDirectory;
+            string final_name = dir + filename + "_backup.json";
+            File.Copy(this.path, final_name);
+            try
+            {
+                string s = JsonConvert.SerializeObject(lst);
+                using (StreamWriter outputFile = new StreamWriter(this.path))
+                {
+                    outputFile.WriteLine(s);
+                }
+            }
+            catch(Exception ex)
+            {
+                File.Copy(final_name, this.path);
+                File.Delete(final_name);
+            }
+            if (File.Exists(final_name))
+                File.Delete(final_name);
         }
     }
 }
