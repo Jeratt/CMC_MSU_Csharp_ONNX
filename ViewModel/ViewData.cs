@@ -134,7 +134,7 @@ namespace ViewModel
             List<Tuple<Task<List<ObjectBox>>, string, Image<Rgb24>>> lst_t = new List<Tuple<Task<List<ObjectBox>>, string, Image<Rgb24>>>();
             List<Detected> detected_copy = new List<Detected>();
             List<ObjectBox> lob_awaited;
-            DetectedImages.Clear();
+            //DetectedImages.Clear();
             foreach (var filename in System.IO.Directory.GetFiles(path))
             {
                 // if filename is image
@@ -186,7 +186,7 @@ namespace ViewModel
                     continue;
                 }
             }
-            RaisePropertyChanged(nameof(DetectedImages));
+            //RaisePropertyChanged(nameof(DetectedImages));
             this.UpdateVault();
         }
 
@@ -201,6 +201,7 @@ namespace ViewModel
                 lst.Add(new SerializableDetected(detectedImage, oriImage, item.ClassName, item.Confidence, item.OriPic.PixelWidth, item.OriPic.PixelHeight));
             }
             this.vault.UpdateVault(lst);
+            this.Init();
         }
 
         public void Init()
@@ -330,6 +331,29 @@ namespace ViewModel
 
         public override void UpdateVault(List<SerializableDetected> lst)
         {
+            List<SerializableDetected>? stored = this.LoadFromVault();
+            List<SerializableDetected> updated = new List<SerializableDetected>();
+            if(!(stored is null))
+            {
+                updated.AddRange(stored);
+            }
+            bool key = false;
+            foreach (var detected in lst)
+            {
+                if (!(stored is null))
+                {
+                    foreach (var from_vault in stored)
+                    {
+                        if (detected.OriPic.SequenceEqual(from_vault.OriPic))
+                            key = true;
+                    }
+                }
+                if (!key)
+                {
+                    updated.Add(detected);
+                }
+            }
+
             if (!File.Exists(this.path))
             {
                 File.Create(this.path);
@@ -341,7 +365,7 @@ namespace ViewModel
             File.Copy(this.path, final_name);
             try
             {
-                string s = JsonConvert.SerializeObject(lst);
+                string s = JsonConvert.SerializeObject(updated);
                 using (StreamWriter outputFile = new StreamWriter(this.path))
                 {
                     outputFile.WriteLine(s);
