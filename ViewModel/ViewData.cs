@@ -144,6 +144,7 @@ namespace ViewModel
                     { continue; }
 
                     img = SixLabors.ImageSharp.Image.Load<Rgb24>(filename);
+                    this.ResizeImage(img);
                     try
                     {
                         name = Path.GetFileNameWithoutExtension(filename);
@@ -197,7 +198,7 @@ namespace ViewModel
             {
                 detectedImage = item.DetectedImage.ToByteArray();
                 oriImage = item.OriPic.ToByteArray();
-                lst.Add(new SerializableDetected(detectedImage, oriImage, item.ClassName, item.Confidence, item.OriPic.Width, item.OriPic.Height));
+                lst.Add(new SerializableDetected(detectedImage, oriImage, item.ClassName, item.Confidence, item.OriPic.PixelWidth, item.OriPic.PixelHeight));
             }
             this.vault.UpdateVault(lst);
         }
@@ -211,12 +212,34 @@ namespace ViewModel
             Image<Rgb24> detectedIm, oriIm;
             foreach (var item in stored)
             {
-                detectedIm = SixLabors.ImageSharp.Image.LoadPixelData<Rgb24>(item.DetectedImage, 416, 416);
-                //detectedIm = ImageDecoder.Decode(item.DetectedImage);
-                oriIm = SixLabors.ImageSharp.Image.LoadPixelData<Rgb24>(item.OriPic, (int)item.Width, (int)item.Height);
-                this.DetectedImages.Add(new Detected(detectedIm, item.ClassName, oriIm, item.Confidence));
+                try
+                {
+                    detectedIm = SixLabors.ImageSharp.Image.LoadPixelData<Rgb24>(item.DetectedImage, 416, 416);
+                    //detectedIm = ImageDecoder.Decode(item.DetectedImage);
+                    oriIm = SixLabors.ImageSharp.Image.LoadPixelData<Rgb24>(item.OriPic, item.Width, item.Height);
+/*                    using (var ms = new System.IO.MemoryStream(item.OriPic))
+                    {
+                        oriIm = SixLabors.ImageSharp.Image.Load<Rgb24>(ms);
+                    }*/
+                    this.DetectedImages.Add(new Detected(detectedIm, item.ClassName, oriIm, item.Confidence));
+                }
+                catch(Exception x)
+                {
+                    continue;
+                }
             }
             RaisePropertyChanged(nameof(DetectedImages));
+        }
+
+        private void ResizeImage(Image<Rgb24> im)
+        {
+            if (im.Width > 500 || im.Height > 500)
+            {
+                double ratio = im.Height / im.Width;
+                int width = 500;
+                int height = (int) (500 * ratio);
+                im.Mutate(x => x.Resize(width, height, KnownResamplers.Lanczos3));
+            }
         }
     }
 

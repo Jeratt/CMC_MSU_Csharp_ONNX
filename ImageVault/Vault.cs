@@ -34,11 +34,11 @@
 
         public double Confidence { get; init; }
 
-        public double Width { get; init; }
+        public int Width { get; init; }
 
-        public double Height { get; init; }
+        public int Height { get; init; }
 
-        public SerializableDetected(byte[] detectedImage, byte[] oriImage, string className, double confidence, double width, double height)
+        public SerializableDetected(byte[] detectedImage, byte[] oriImage, string className, double confidence, int width, int height)
         {
             DetectedImage = detectedImage;
             OriPic = oriImage;
