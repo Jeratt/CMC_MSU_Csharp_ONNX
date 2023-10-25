@@ -340,6 +340,7 @@ namespace ViewModel
             bool key = false;
             foreach (var detected in lst)
             {
+                key = false;
                 if (!(stored is null))
                 {
                     foreach (var from_vault in stored)
@@ -362,6 +363,10 @@ namespace ViewModel
             string dir = Path.GetDirectoryName(this.path);
             //string dir = Environment.CurrentDirectory;
             string final_name = dir + filename + "_backup.json";
+            if (File.Exists(final_name))
+            {
+                File.Delete(final_name);
+            }
             File.Copy(this.path, final_name);
             try
             {
