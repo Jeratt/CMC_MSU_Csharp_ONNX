@@ -5,6 +5,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Advanced;
 using Color = System.Windows.Media.Color;
 
 namespace ImageSharp.WpfImageSource
@@ -276,5 +277,13 @@ namespace ImageSharp.WpfImageSource
         public override event EventHandler<DownloadProgressEventArgs> DownloadProgress;
 
         public override event EventHandler<ExceptionEventArgs> DownloadFailed;
+
+        public byte[] ToByteArray()
+        {
+            var _IMemoryGroup = source.GetPixelMemoryGroup();
+            var _MemoryGroup = _IMemoryGroup.ToArray()[0];
+            var PixelData = MemoryMarshal.AsBytes(_MemoryGroup.Span).ToArray();
+            return PixelData;
+        }
     }
 }

@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "My_ONNX_YOLO", "..\MyYOLOAp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ONXX_UI", "ONXX_UI.csproj", "{084A6D7A-2DDC-4064-A5C2-A734B15A6B84}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageVault", "..\ImageVault\ImageVault.csproj", "{8CBD8739-54BF-4BCD-8727-0611B0B62330}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{084A6D7A-2DDC-4064-A5C2-A734B15A6B84}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{084A6D7A-2DDC-4064-A5C2-A734B15A6B84}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{084A6D7A-2DDC-4064-A5C2-A734B15A6B84}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8CBD8739-54BF-4BCD-8727-0611B0B62330}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8CBD8739-54BF-4BCD-8727-0611B0B62330}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8CBD8739-54BF-4BCD-8727-0611B0B62330}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8CBD8739-54BF-4BCD-8727-0611B0B62330}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
