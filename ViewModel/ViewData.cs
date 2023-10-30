@@ -19,6 +19,7 @@ using Newtonsoft.Json.Linq;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats;
 using static System.Windows.Forms.DataFormats;
+using System.Windows.Media.Animation;
 
 namespace ViewModel
 {
@@ -305,6 +306,16 @@ namespace ViewModel
 
     class YOLOVault : Vault
     {
+        public string FinalName
+        {
+            get
+            {
+                string filename = Path.GetFileNameWithoutExtension(this.path);
+                string dir = Path.GetDirectoryName(this.path);
+                return dir + filename + "_backup.json";
+            }
+        }
+
         public override bool CheckFile(string path)
         {
 /*            if (File.Exists(path))
@@ -316,7 +327,10 @@ namespace ViewModel
 
         public override void ClearVault()
         {
-            File.Delete(this.path);
+            if (File.Exists(this.path))
+            {
+                File.Delete(this.path);
+            }
         }
 
         public override List<SerializableDetected>? LoadFromVault()
@@ -324,6 +338,11 @@ namespace ViewModel
             if (!File.Exists(this.path))
             {
                 return null;
+            }
+            else if (File.Exists(this.FinalName))
+            {
+                File.Copy(this.FinalName, this.path);
+                File.Delete(this.FinalName);
             }
             var detected = JsonConvert.DeserializeObject<List<SerializableDetected>>(File.ReadAllText(this.path));
             return detected;
@@ -355,19 +374,17 @@ namespace ViewModel
                 }
             }
 
-            if (!File.Exists(this.path))
+/*            if (!File.Exists(this.path))
             {
                 File.Create(this.path);
-            }
-            string filename = Path.GetFileNameWithoutExtension(this.path);
-            string dir = Path.GetDirectoryName(this.path);
-            //string dir = Environment.CurrentDirectory;
-            string final_name = dir + filename + "_backup.json";
-            if (File.Exists(final_name))
+            }*/
+            if (File.Exists(this.FinalName))
             {
-                File.Delete(final_name);
+                File.Delete(this.FinalName);
             }
-            File.Copy(this.path, final_name);
+            if (File.Exists(this.path)){
+                File.Copy(this.path, this.FinalName);
+            }
             try
             {
                 string s = JsonConvert.SerializeObject(updated);
@@ -378,11 +395,11 @@ namespace ViewModel
             }
             catch(Exception ex)
             {
-                File.Copy(final_name, this.path);
-                File.Delete(final_name);
+                File.Copy(this.FinalName, this.path);
+                File.Delete(this.FinalName);
             }
-            if (File.Exists(final_name))
-                File.Delete(final_name);
+            if (File.Exists(this.FinalName))
+                File.Delete(this.FinalName);
         }
     }
 }
