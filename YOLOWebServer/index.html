@@ -1,0 +1,164 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>ObjectDetection</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+
+    <form action="/submit" method="POST" enctype="multipart/form-data">
+        <label for="uploadFile">Выберите файл (.JPG, .JPEG)</label>
+        <input type="file" name="uploadFile" id="uploadFile" required />
+        <input type="submit" value="Запустить анализ" id="submit">
+    </form>
+
+    <div id="container">
+        <img id="image" alt="Ваше изображение" width="500" height="500">
+        <canvas id="myCanvas"></canvas>
+    </div>
+
+    <table class="DetectedData" id="table">
+        <thead>
+            <tr>
+                <th>
+                    i
+                </th>
+                <th>
+                    Class
+                </th>
+                <th>
+                    Confidence
+                </th>
+                <th>
+                    XMin
+                </th>
+                <th>
+                    YMin
+                </th>
+                <th>
+                    XMax
+                </th>
+                <th>
+                    YMax
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <script type="text/javascript">
+
+        const url = "https://localhost:7296";
+        const canvas = document.getElementById("myCanvas");
+        const ctx = canvas.getContext("2d");
+        const container = document.getElementById('container');
+
+        function onFileSelected() {
+            const filename = uploadFile.files[0];
+            const reader = new FileReader();
+            const imageObj = document.getElementById('image');
+
+            reader.addEventListener('load', () => {
+
+                imageObj.src = reader.result;
+
+                var img = getBase64Image(reader.result);
+
+                table.onclick = function (event) {
+                    let target = event.target;
+
+                    if (target.tagName == 'TD')
+                        highlight(target.parentNode);
+
+                    if (target.tagName != 'TR') return;
+
+                    highlight(target);
+                };
+
+                postImage(img);
+            });
+
+            reader.readAsDataURL(filename);
+        }
+
+        function getBase64Image(img) {
+            /*            console.log(typeof (img))
+                        console.log(img)*/
+            img = img.replace('data:', '').replace(/^.+,/, '');
+            /*            console.log(typeof (img))
+                        console.log(img)*/
+            var image = new Image();
+            image.src = img;
+            //document.body.appendChild(image);
+            var canvas = document.createElement("canvas");
+            canvas.width = image.width;
+            canvas.height = image.height;
+            var ctx = canvas.getContext("2d");;
+            console.log(image);
+            ctx.drawImage(image, 0, 0);
+            return img;
+        }
+
+        async function postImage(img) {
+            await fetch(url + "/YOLO/postImage",
+                {
+                    method: "POST",
+                    headers:
+                    {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(img),
+                })
+                .then(
+                    response => {
+                        console.log(response)
+                        return response.json();
+                    }).catch(err => {
+                        console.log(err.message);
+                    })
+                .then(
+                    json => {
+                        $("#table > tbody > tr").remove();
+                        let i, XMin, YMin, XMax, YMax, Confidence, Class;
+                        console.log(json);
+                        for (i = 0; i < json.length; ++i) {
+                            Class = json[i].class;
+                            Confidence = json[i].confidence;
+                            XMin = json[i].xMin;
+                            YMin = json[i].yMin;
+                            XMax = json[i].xMax;
+                            YMax = json[i].yMax;
+                            var row = '<tr><td>' + i + '</td><td>' + Class + '</td><td>' + Confidence.toPrecision(2) + '</td><td>' + XMin + '</td><td>' + YMin + '</td><td>' + XMax + '</td><td>' + YMax + '</td>';
+                            $("#table > tbody").append(row);
+                        }
+                    }).catch(err => {
+                        console.log(err);
+                    });
+        }
+
+        function highlight(tr) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
+            //console.log(tr);
+            let XMin = tr.cells[3].innerHTML;
+            let YMin = tr.cells[4].innerHTML;
+            let width = tr.cells[5].innerHTML - XMin;
+            let height = tr.cells[6].innerHTML - YMin;
+            ctx.lineWidth = 5;
+            ctx.strokeStyle = "#16AA55";
+/*            console.log(XMin);
+            console.log(YMin);
+            console.log(width);
+            console.log(height);*/
+            ctx.strokeRect(XMin, YMin, width, height);
+        }
+
+        submit.onclick = onFileSelected;
+    </script>
+
+</body>
+</html>
