@@ -40,15 +40,6 @@ namespace YOLOWebServer.Controllers
         {
             try
             {
-/*                byte[] image = Convert.FromBase64String(data);
-                int width, height;
-                using (var ms = new MemoryStream(image))
-                {
-                    System.Drawing.Image img_tmp = System.Drawing.Image.FromStream(ms);
-                    width = img_tmp.Width;
-                    height = img_tmp.Height;
-                }
-*/
                 Image<Rgb24> img;
                 List<ObjectBox> lob;
                 byte[] image = Convert.FromBase64String(data);
@@ -58,9 +49,7 @@ namespace YOLOWebServer.Controllers
                     img = SixLabors.ImageSharp.Image.Load<Rgb24>(ms);
                 }
 
-                //img = Image.Load(image);
-                //img = SixLabors.ImageSharp.Image.LoadPixelData<Rgb24>(Encoding.ASCII.GetBytes(data), width, height);
-                lob = await modelManager.PredictAsync(img, cts.Token); // TODO asynchrous code here ?
+                lob = await modelManager.PredictAsync(img, cts.Token);
                 return base.StatusCode((int)HttpStatusCode.OK, lob);
             }
             catch(Exception ex)
