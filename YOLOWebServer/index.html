@@ -55,6 +55,8 @@
         const canvas = document.getElementById("myCanvas");
         const ctx = canvas.getContext("2d");
         const container = document.getElementById('container');
+        const TARGETSIZE = 416;
+        let selectedTr;
 
         function onFileSelected() {
             const filename = uploadFile.files[0];
@@ -63,7 +65,12 @@
 
             reader.addEventListener('load', () => {
 
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
                 imageObj.src = reader.result;
+
+                imageObj.width = TARGETSIZE;
+                imageObj.height = TARGETSIZE;
 
                 var img = getBase64Image(reader.result);
 
@@ -85,20 +92,17 @@
         }
 
         function getBase64Image(img) {
-            /*            console.log(typeof (img))
-                        console.log(img)*/
             img = img.replace('data:', '').replace(/^.+,/, '');
-            /*            console.log(typeof (img))
-                        console.log(img)*/
             var image = new Image();
             image.src = img;
-            //document.body.appendChild(image);
             var canvas = document.createElement("canvas");
             canvas.width = image.width;
             canvas.height = image.height;
             var ctx = canvas.getContext("2d");;
-            console.log(image);
-            ctx.drawImage(image, 0, 0);
+            image.onload = function ()
+            {
+                ctx.drawImage(image, 0, 0);
+            }
             return img;
         }
 
@@ -114,7 +118,6 @@
                 })
                 .then(
                     response => {
-                        console.log(response)
                         return response.json();
                     }).catch(err => {
                         console.log(err.message);
@@ -123,7 +126,6 @@
                     json => {
                         $("#table > tbody > tr").remove();
                         let i, XMin, YMin, XMax, YMax, Confidence, Class;
-                        console.log(json);
                         for (i = 0; i < json.length; ++i) {
                             Class = json[i].class;
                             Confidence = json[i].confidence;
@@ -140,20 +142,20 @@
         }
 
         function highlight(tr) {
+            if (selectedTr) {
+                selectedTr.classList.remove('highlight');
+            }
+            selectedTr = tr;
+            selectedTr.classList.add('highlight');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             canvas.width = container.offsetWidth;
             canvas.height = container.offsetHeight;
-            //console.log(tr);
             let XMin = tr.cells[3].innerHTML;
             let YMin = tr.cells[4].innerHTML;
             let width = tr.cells[5].innerHTML - XMin;
             let height = tr.cells[6].innerHTML - YMin;
             ctx.lineWidth = 5;
             ctx.strokeStyle = "#16AA55";
-/*            console.log(XMin);
-            console.log(YMin);
-            console.log(width);
-            console.log(height);*/
             ctx.strokeRect(XMin, YMin, width, height);
         }
 
