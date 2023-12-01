@@ -19,7 +19,7 @@
         <canvas id="myCanvas"></canvas>
     </div>
 
-    <table class="DetectedData" id="table">
+    <table class="DetectedData" id="table" hidden="hidden">
         <thead>
             <tr>
                 <th>
@@ -49,12 +49,15 @@
         </tbody>
     </table>
 
+    <h2 id="no_obj">No detected objects!</h2>
+
     <script type="text/javascript">
 
         const url = "https://localhost:7296";
         const canvas = document.getElementById("myCanvas");
         const ctx = canvas.getContext("2d");
         const container = document.getElementById('container');
+        const table = document.getElementById('table');
         const TARGETSIZE = 416;
         let selectedTr;
 
@@ -126,6 +129,14 @@
                     json => {
                         $("#table > tbody > tr").remove();
                         let i, XMin, YMin, XMax, YMax, Confidence, Class;
+                        if (json.length > 0) {
+                            $("#no_obj").css("display", "none");
+                            table.removeAttribute('hidden');
+                        }
+                        else {
+                            $("#no_obj").css("display", "block");
+                            table.setAttribute('hidden', 'hidden');
+                        }
                         for (i = 0; i < json.length; ++i) {
                             Class = json[i].class;
                             Confidence = json[i].confidence;
