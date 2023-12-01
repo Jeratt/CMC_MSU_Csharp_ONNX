@@ -59,6 +59,12 @@
         const container = document.getElementById('container');
         const table = document.getElementById('table');
         const TARGETSIZE = 416;
+        let classes = [
+            "aeroplane", "bicycle", "bird", "boat", "bottle",
+            "bus", "car", "cat", "chair", "cow",
+            "diningtable", "dog", "horse", "motorbike", "person",
+            "pottedplant", "sheep", "sofa", "train", "tvmonitor"
+        ];
         let selectedTr;
 
         function onFileSelected() {
@@ -144,7 +150,7 @@
                             YMin = json[i].yMin;
                             XMax = json[i].xMax;
                             YMax = json[i].yMax;
-                            var row = '<tr><td>' + i + '</td><td>' + Class + '</td><td>' + Confidence.toPrecision(2) + '</td><td>' + XMin + '</td><td>' + YMin + '</td><td>' + XMax + '</td><td>' + YMax + '</td>';
+                            var row = '<tr><td>' + i + '</td><td>' + classes[Class] + '</td><td>' + Confidence.toPrecision(2) + '</td><td>' + XMin + '</td><td>' + YMin + '</td><td>' + XMax + '</td><td>' + YMax + '</td>';
                             $("#table > tbody").append(row);
                         }
                     }).catch(err => {
