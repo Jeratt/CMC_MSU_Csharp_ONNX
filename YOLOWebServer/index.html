@@ -1,0 +1,183 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>ObjectDetection</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+
+    <form action="/submit" method="POST" enctype="multipart/form-data">
+        <label for="uploadFile">Выберите файл (.JPG, .JPEG)</label>
+        <input type="file" name="uploadFile" id="uploadFile" required />
+        <input type="submit" value="Запустить анализ" id="submit">
+    </form>
+
+    <div id="container">
+        <img id="image" alt="Ваше изображение" width="500" height="500">
+        <canvas id="myCanvas"></canvas>
+    </div>
+
+    <table class="DetectedData" id="table" hidden="hidden">
+        <thead>
+            <tr>
+                <th>
+                    i
+                </th>
+                <th>
+                    Class
+                </th>
+                <th>
+                    Confidence
+                </th>
+                <th>
+                    XMin
+                </th>
+                <th>
+                    YMin
+                </th>
+                <th>
+                    XMax
+                </th>
+                <th>
+                    YMax
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <h2 id="no_obj">No detected objects!</h2>
+
+    <script type="text/javascript">
+
+        const url = "https://localhost:7296";
+        const canvas = document.getElementById("myCanvas");
+        const ctx = canvas.getContext("2d");
+        const container = document.getElementById('container');
+        const table = document.getElementById('table');
+        const TARGETSIZE = 416;
+        let classes = [
+            "aeroplane", "bicycle", "bird", "boat", "bottle",
+            "bus", "car", "cat", "chair", "cow",
+            "diningtable", "dog", "horse", "motorbike", "person",
+            "pottedplant", "sheep", "sofa", "train", "tvmonitor"
+        ];
+        let selectedTr;
+
+        function onFileSelected() {
+            const filename = uploadFile.files[0];
+            const reader = new FileReader();
+            const imageObj = document.getElementById('image');
+
+            reader.addEventListener('load', () => {
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                imageObj.src = reader.result;
+
+                imageObj.width = TARGETSIZE;
+                imageObj.height = TARGETSIZE;
+
+                var img = getBase64Image(reader.result);
+
+                table.onclick = function (event) {
+                    let target = event.target;
+
+                    if (target.tagName == 'TD')
+                        highlight(target.parentNode);
+
+                    if (target.tagName != 'TR') return;
+
+                    highlight(target);
+                };
+
+                postImage(img);
+            });
+
+            reader.readAsDataURL(filename);
+        }
+
+        function getBase64Image(img) {
+            img = img.replace('data:', '').replace(/^.+,/, '');
+            var image = new Image();
+            image.src = img;
+            var canvas = document.createElement("canvas");
+            canvas.width = image.width;
+            canvas.height = image.height;
+            var ctx = canvas.getContext("2d");;
+            image.onload = function ()
+            {
+                ctx.drawImage(image, 0, 0);
+            }
+            return img;
+        }
+
+        async function postImage(img) {
+            await fetch(url + "/YOLO/postImage",
+                {
+                    method: "POST",
+                    headers:
+                    {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(img),
+                })
+                .then(
+                    response => {
+                        return response.json();
+                    }).catch(err => {
+                        console.log(err.message);
+                    })
+                .then(
+                    json => {
+                        $("#table > tbody > tr").remove();
+                        let i, XMin, YMin, XMax, YMax, Confidence, Class;
+                        if (json.length > 0) {
+                            $("#no_obj").css("display", "none");
+                            table.removeAttribute('hidden');
+                        }
+                        else {
+                            $("#no_obj").css("display", "block");
+                            table.setAttribute('hidden', 'hidden');
+                        }
+                        for (i = 0; i < json.length; ++i) {
+                            Class = json[i].class;
+                            Confidence = json[i].confidence;
+                            XMin = json[i].xMin;
+                            YMin = json[i].yMin;
+                            XMax = json[i].xMax;
+                            YMax = json[i].yMax;
+                            var row = '<tr><td>' + i + '</td><td>' + classes[Class] + '</td><td>' + Confidence.toPrecision(2) + '</td><td>' + XMin + '</td><td>' + YMin + '</td><td>' + XMax + '</td><td>' + YMax + '</td>';
+                            $("#table > tbody").append(row);
+                        }
+                    }).catch(err => {
+                        console.log(err);
+                    });
+        }
+
+        function highlight(tr) {
+            if (selectedTr) {
+                selectedTr.classList.remove('highlight');
+            }
+            selectedTr = tr;
+            selectedTr.classList.add('highlight');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
+            let XMin = tr.cells[3].innerHTML;
+            let YMin = tr.cells[4].innerHTML;
+            let width = tr.cells[5].innerHTML - XMin;
+            let height = tr.cells[6].innerHTML - YMin;
+            ctx.lineWidth = 5;
+            ctx.strokeStyle = "#16AA55";
+            ctx.strokeRect(XMin, YMin, width, height);
+        }
+
+        submit.onclick = onFileSelected;
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,25 @@
+﻿#table > tbody > tr > *:nth-child(n+4):nth-child(-n+7) {
+    display: none;
+}
+
+#table > thead > tr > *:nth-child(n+4):nth-child(-n+7) {
+    display: none;
+}
+
+#container {
+    position: relative;
+}
+
+#myCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+#table .highlight{
+    background-color: rgba(255, 0, 0, 0.3)
+}
+
+#no_obj{
+    display: none;
+}
